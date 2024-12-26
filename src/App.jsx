@@ -10,6 +10,8 @@ import Login from './Login/Login';
 import Sign from './Login/Sign';
 import CreateMaqola from './components/News/CreatNews';
 import EditMaqola from './components/News/New.Edite';
+import Profil from './components/Profil/Profil.getOne';
+import MyBlook from './components/Profil/MyBlook';
 
 const App = () => {
   const navigate = useNavigate();
@@ -41,6 +43,8 @@ const App = () => {
           <Route path="/Sign" element={<Sign />} />
           <Route path="/newCr" element={<CreateMaqola />} />
           <Route path='/EditeArticle/:id' element={<EditMaqola/>} />
+          <Route path ='/profile' element={<Profil/>} />
+          <Route path='/myBlog' element={<MyBlook/>} />
         </Routes>
       </main>
 

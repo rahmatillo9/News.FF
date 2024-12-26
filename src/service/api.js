@@ -69,3 +69,5 @@ export const ArticleDelete = async (NewsId) => {
     alert('Failed to delete the article');
   }
 };
+
+

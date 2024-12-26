@@ -4,7 +4,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import Drawer from "@mui/material/Drawer";
@@ -15,10 +14,15 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "../images/Logo.png";
+import Avatar from "@mui/material/Avatar";
+import Tooltip from "@mui/material/Tooltip";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleCategoryClick = (category) => {
     navigate(`/All/${category}`);
@@ -31,6 +35,23 @@ const Navbar = () => {
     setDrawerOpen(open);
   };
 
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
+
+  const handleProfileClick = () => {
+    setAnchorElUser(null);
+    navigate("/profile"); 
+  };
+
+  const MyBlog = () => {
+    setAnchorElUser(null);
+    navigate("/myBlog");
+  }
   const categories = [
     { id: "Uzb", label: "O'zbek" },
     { id: "Jxn", label: "Jahon Iqtisodiyot" },
@@ -57,7 +78,6 @@ const Navbar = () => {
             </Typography>
           </Link>
 
-
           <Box
             sx={{
               flexGrow: 1,
@@ -76,6 +96,7 @@ const Navbar = () => {
               </Button>
             ))}
           </Box>
+
 
           <Box
             sx={{
@@ -96,10 +117,41 @@ const Navbar = () => {
                 Login
               </Button>
             </Link>
-            <Avatar alt="User" src="https://icons8.com/icon/23265/user" />
+
+            <Tooltip title="Open settings">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Avatar alt="User Avatar" src="/static/images/avatar/2.jpg" />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              sx={{ mt: "45px" }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              <MenuItem onClick={handleProfileClick}>
+                <Typography textAlign="center">Profile</Typography>
+              </MenuItem>
+              <MenuItem >
+                <Typography textAlign="center">Edit Profil</Typography>
+              </MenuItem>
+              <MenuItem onClick={MyBlog} >
+                <Typography textAlign="center">My MyBlog</Typography>
+              </MenuItem>
+            </Menu>
           </Box>
 
-    
+
           <IconButton
             edge="end"
             color="inherit"
@@ -111,7 +163,6 @@ const Navbar = () => {
           </IconButton>
         </Toolbar>
       </AppBar>
-
 
       <Drawer
         anchor="right"
