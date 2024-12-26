@@ -1,20 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { getByCategory } from "../../service/api";
 import { useParams, useNavigate } from "react-router-dom";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardMedia from "@mui/material/CardMedia";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 
 const Category = () => {
-  const { ctg } = useParams(); 
+  const { ctg } = useParams();
   const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true); 
-  const [error, setError] = useState(null); 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNews = async () => {
       setLoading(true);
-      setError(null); 
+      setError(null);
       try {
-        const data = await getByCategory(ctg); 
+        const data = await getByCategory(ctg);
         setNews(data);
       } catch (error) {
         setError("Failed to fetch the news for this category.");
@@ -28,89 +37,88 @@ const Category = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-xl font-semibold text-gray-600">Loading...</div>
-      </div>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-red-600 text-xl mb-4">{error}</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-all"
-        >
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
           ← Back
-        </button>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
   if (news.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-gray-600 text-xl mb-4">No news found for this category.</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-all"
-        >
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+          No news found for this category.
+        </Typography>
+        <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
           ← Back
-        </button>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
   const handleGetOne = (NewsId) => {
     navigate(`/OneNews/${NewsId}`);
   };
+
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-center text-gray-800">
+    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
+      <Typography variant="h4" sx={{ textAlign: "center", mb: 4, fontWeight: "bold" }}>
         {ctg.toUpperCase()} News
-      </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      </Typography>
+      <Grid container spacing={3}>
         {news.map((article) => (
-          <div
-            key={article.id}
-            className="border rounded-lg shadow-lg overflow-hidden bg-white hover:shadow-xl transition-shadow duration-300"
-          >
-            <img
-              src={article.imageUrl}
-              alt={article.title}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-4">
-              <h2 className="text-lg font-bold text-gray-800 mb-2">
-                {article.title}
-              </h2>
-              <p className="text-gray-600 text-sm mb-4">
-                {article.description.length > 200
-                  ? article.description.slice(0, 200) + "..."
-                  : article.description}
-              </p>
-              <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-                <span>By: {article.user?.Lastname || "Unknown"}</span>
-                <span>{new Date(article.createdAt).toLocaleDateString()}</span>
-              </div>
-              <button
-                onClick={() => handleGetOne(article.id)} 
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                Read more →
-              </button>
-            </div>
-          </div>
+          <Grid item xs={12} sm={6} md={4} key={article.id}>
+            <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+              <CardMedia
+                component="img"
+                height="200"
+                image={article.imageUrl || "https://via.placeholder.com/400x200"}
+                alt={article.title}
+              />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography gutterBottom variant="h6" component="div">
+                  {article.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {article.description.length > 100
+                    ? article.description.slice(0, 100) + "..."
+                    : article.description}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <strong>By:</strong> {article.user?.Lastname || "Unknown"}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Published:</strong> {new Date(article.createdAt).toLocaleDateString()}
+                </Typography>
+              </CardContent>
+              <Box sx={{ p: 2, textAlign: "right" }}>
+                <Button size="small" color="primary" onClick={() => handleGetOne(article.id)}>
+                  Read more →
+                </Button>
+              </Box>
+            </Card>
+          </Grid>
         ))}
-      </div>
-      <button
-        onClick={() => navigate(-1)}
-        className="block mx-auto bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all"
-      >
-        ← Back
-      </button>
-    </div>
+      </Grid>
+      <Box sx={{ textAlign: "center", mt: 4 }}>
+        <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
+          ← Back
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

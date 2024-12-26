@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Navbar } from './components/Navbar';
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
@@ -30,7 +30,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <Navbar/>
 
       <main className="flex-grow">
         <Routes>
@@ -38,7 +38,7 @@ const App = () => {
           <Route path="/OneNews/:id" element={<NewsDetail />} />
           <Route path="/All/:ctg" element={<Category />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/sigin" element={<Sign />} />
+          <Route path="/Sign" element={<Sign />} />
           <Route path="/newCr" element={<CreateMaqola />} />
           <Route path='/EditeArticle/:id' element={<EditMaqola/>} />
         </Routes>

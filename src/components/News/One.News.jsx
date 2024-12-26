@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { getOneNews, ArticleDelete } from "../../service/api";
 import { useParams, useNavigate } from "react-router-dom";
-import {jwtDecode} from "jwt-decode"; // JWT decode qilish uchun
+import {jwtDecode} from "jwt-decode";
+import Card from "@mui/material/Card";
+import CardMedia from "@mui/material/CardMedia";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import Stack from "@mui/material/Stack";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 
 const NewsDetail = () => {
   const { id } = useParams();
   const [news, setNews] = useState(null);
-  const [authorId, setAuthorId] = useState(null); // JWT dan olgan user ID
-  const [error, setError] = useState(null); // Token xatolarini ko'rsatish uchun
+  const [authorId, setAuthorId] = useState(null);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // JWT token orqali user ID olish
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded = jwtDecode(token);
         if (decoded && decoded.id) {
-          setAuthorId(decoded.id); // User ID ni olish
+          setAuthorId(decoded.id);
         } else {
           setError("Token invalid or missing userId.");
         }
@@ -30,7 +39,6 @@ const NewsDetail = () => {
     }
   }, []);
 
-  // Newsni olish
   useEffect(() => {
     const fetchNews = async () => {
       try {
@@ -38,7 +46,7 @@ const NewsDetail = () => {
         setNews(data);
       } catch (error) {
         console.error("Failed to fetch news:", error);
-        alert("Failed to fetch the news.");
+        setError("Failed to fetch the news.");
       }
     };
 
@@ -52,7 +60,7 @@ const NewsDetail = () => {
     try {
       await ArticleDelete(newsId);
       alert("Article deleted successfully!");
-      navigate(-1); // Orqaga qaytadi
+      navigate(-1);
     } catch (error) {
       console.error("Error deleting article:", error);
       alert("Failed to delete the article.");
@@ -63,76 +71,74 @@ const NewsDetail = () => {
     navigate(`/EditeArticle/${newsId}`);
   };
 
-  if (!news) {
-    return <div className="text-center text-gray-600">Loading...</div>;
+  if (error) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   }
 
-  if (error) {
-    return <div className="text-center text-red-600">{error}</div>;
+  if (!news) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-yellow-300 shadow-2xl rounded-lg overflow-hidden">
-      <div className="relative h-auto">
-        <img
-          src={news.imageUrl}
+    <Box sx={{ maxWidth: 800, mx: "auto", mt: 4 }}>
+      <Card>
+        <CardMedia
+          component="img"
+          height="400"
+          image={news.imageUrl || "https://via.placeholder.com/800x400"}
           alt={news.title}
-          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-white px-4 text-center drop-shadow-lg">
+        <CardContent>
+          <Typography variant="h4" gutterBottom>
             {news.title}
-          </h1>
-        </div>
-      </div>
+          </Typography>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="body1" color="text.secondary" paragraph>
+            {news.description}
+          </Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                <strong>By:</strong> {news.user?.Lastname || "Unknown"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Published:</strong> {new Date(news.createdAt).toLocaleDateString()}
+              </Typography>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
 
-      <div className="p-6 space-y-6">
-        <p className="text-lg text-gray-700 leading-relaxed">
-          {news.description}
-        </p>
-        <div className="flex justify-between items-center text-sm text-gray-500 border-t pt-4">
-          <span>
-            <strong className="text-gray-800">By:</strong> {news.user?.Lastname || "Unknown"}
-          </span>
-          <span>
-            <strong className="text-gray-800">Published:</strong> {new Date(news.createdAt).toLocaleDateString()}
-          </span>
-        </div>
-
-        <div className="flex justify-end space-x-4 mt-6">
-          <button
-            onClick={() => handleDelete(news.id)}
-            type="button"
-            className={`text-white font-medium rounded-lg text-sm px-4 py-2 ${
-              news.authorId !== authorId
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-red-500 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300"
-            }`}
-            disabled={news.authorId !== authorId}
-          >
-            Delete
-          </button>
-          <button
-            onClick={() => handleEdit(news.id)}
-            type="button"
-            className={`text-white font-medium rounded-lg text-sm px-4 py-2 ${
-              news.authorId !== authorId
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300"
-            }`}
-            disabled={news.authorId !== authorId}
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 ease-in-out shadow-md"
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
-    </div>
+      <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          disabled={news.authorId !== authorId}
+          onClick={() => handleEdit(news.id)}
+        >
+          Edit
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          disabled={news.authorId !== authorId}
+          onClick={() => handleDelete(news.id)}
+        >
+          Delete
+        </Button>
+        <Button variant="outlined" onClick={() => navigate(-1)}>
+          ← Back
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 
