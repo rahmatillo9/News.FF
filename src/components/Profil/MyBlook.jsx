@@ -1,77 +1,96 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import { getNewsByUser } from "../../service/api"; // Ma'lumotni foydalanuvchiga oid olish uchun bu funksiya kerak
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardMedia from "@mui/material/CardMedia";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import CardActions from "@mui/material/CardActions";
+import Button from "@mui/material/Button";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
 
 const MyBlog = () => {
-  const [articles, setArticles] = useState([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const [myArticles, setMyArticles] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const fetchMyArticles = async () => {
       try {
-        const decoded = jwtDecode(token);
-        setUserId(decoded.id);
-      } catch (err) {
-        console.error("Invalid token:", err);
-        setError("Invalid token. Please log in again.");
-      }
-    } else {
-      setError("Token not found. Please log in.");
-    }
-  }, []);
-
-  useEffect(() => {
-    const fetchArticles = async () => {
-      if (!userId) return;
-
-      setLoading(true);
-      try {
-        const response = await axios.get(`/author/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        setArticles(response.data); 
-      } catch (err) {
-        console.error("Error fetching articles:", err);
-        setError("Failed to fetch your articles.");
-      } finally {
-        setLoading(false);
+        // Foydalanuvchi maqolalarini olish
+        const data = await getNewsByUser(); // bu funksiyani backendni yangilab, foydalanuvchining maqolalarini olish uchun yozish kerak
+        setMyArticles(data);
+      } catch (error) {
+        console.error("Failed to fetch my articles:", error);
       }
     };
 
-    fetchArticles();
-  }, [userId]);
+    fetchMyArticles();
+  }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
+  const handleGetOne = (articleId) => {
+    navigate(`/OneNews/${articleId}`);
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white border rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center mb-6">My Blog Posts</h2>
-
-      {articles.length === 0 ? (
-        <p className="text-center text-gray-500">You have not uploaded any articles yet.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {articles.map((article) => (
-            <div key={article.id} className="p-4 border rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-2">{article.title}</h3>
-              <p className="text-gray-600 mb-4">{article.description}</p>
-              <p className="text-sm text-blue-500">Category: {article.category}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <Box sx={{ padding: 4 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        My Blog
+      </Typography>
+      <Grid container spacing={4}>
+        {myArticles.map((article) => (
+          <Grid item xs={12} sm={6} md={4} key={article.id}>
+            <Card sx={{ maxWidth: 345, boxShadow: 3 }}>
+              <CardMedia
+                component="img"
+                height="140"
+                image={article.imageUrl || "https://via.placeholder.com/400"}
+                alt={article.title}
+              />
+              <CardContent>
+                <Typography
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  sx={{ fontWeight: "bold", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
+                  {article.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 3, overflow: "hidden" }}
+                >
+                  {article.description}
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Avatar alt={article.user?.Lastname || "Unknown"} />
+                    <Typography variant="body2" color="text.secondary">
+                      {article.user?.Lastname || "Unknown"}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {new Date(article.createdAt).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              </CardContent>
+              <CardActions>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleGetOne(article.id)}
+                >
+                  View Details
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
   );
 };
 
